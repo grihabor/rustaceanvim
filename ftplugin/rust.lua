@@ -1,6 +1,14 @@
 ---@type RustaceanConfig
 local config = require('rustaceanvim.config.internal')
 
+function table.shallow_copy(t)
+  local t2 = {}
+  for k, v in pairs(t) do
+    t2[k] = v
+  end
+  return t2
+end
+
 if not vim.g.did_rustaceanvim_initialize then
   require('rustaceanvim.config.check').check_for_lspconfig_conflict(vim.schedule_wrap(function(warn)
     vim.notify_once(warn, vim.log.levels.WARN)
@@ -33,7 +41,8 @@ if not vim.g.did_rustaceanvim_initialize then
   vim.lsp.commands['rust-analyzer.debugSingle'] = function(command)
     local overrides = require('rustaceanvim.overrides')
     local args = command.arguments[1].args
-    overrides.sanitize_command_for_debugging(args.cargoArgs)
+    local cargoArgs = table.shallow_copy(args.cargoArgs)
+    overrides.sanitize_command_for_debugging(cargoArgs)
     local cached_commands = require('rustaceanvim.cached_commands')
     cached_commands.set_last_debuggable(args)
     local rt_dap = require('rustaceanvim.dap')
